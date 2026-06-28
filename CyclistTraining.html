@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cyclist Training">
+<title>Cyclist Training Program</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface2: #f0efec;
+    --border: #e2e0db;
+    --border-strong: #c8c6c0;
+    --text: #1a1a18;
+    --text2: #5a5955;
+    --text3: #908e89;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --accent-text: #1d4ed8;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --success-text: #15803d;
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --warning-text: #b45309;
+    --radius: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #252522;
+      --surface2: #2e2e2b;
+      --border: #3a3a36;
+      --border-strong: #4e4e4a;
+      --text: #f0efe9;
+      --text2: #a8a69f;
+      --text3: #6e6c66;
+      --accent: #3b82f6;
+      --accent-bg: #1e3a5f;
+      --accent-text: #93c5fd;
+      --success-bg: #052e16;
+      --success-text: #4ade80;
+      --warning-bg: #2d1a00;
+      --warning-text: #fbbf24;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.5; min-height: 100vh; }
+  .app { max-width: 430px; margin: 0 auto; padding: 0 0 40px; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 16px 12px; position: sticky; top: 0; z-index: 10; }
+  .header h1 { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .header p { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .tabs { display: flex; gap: 8px; padding: 12px 16px 0; }
+  .tab { flex: 1; padding: 9px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text2); text-align: center; transition: all 0.15s; }
+  .tab.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
+  .week-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0; }
+  .week-center { text-align: center; }
+  .week-label { font-size: 16px; font-weight: 600; color: var(--text); }
+  .week-dates { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .phase-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-top: 3px; }
+  .phase-foundation { background: var(--accent-bg); color: var(--accent-text); }
+  .phase-build { background: var(--accent-bg); color: var(--accent-text); }
+  .phase-deload { background: var(--warning-bg); color: var(--warning-text); }
+  .phase-peak { background: var(--success-bg); color: var(--success-text); }
+  .nav-btn { padding: 8px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); font-size: 14px; cursor: pointer; color: var(--text); font-weight: 500; min-width: 70px; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .progress-row { display: flex; gap: 5px; padding: 10px 16px 0; }
+  .progress-dot { flex: 1; height: 3px; border-radius: 2px; background: var(--border-strong); transition: background 0.2s; }
+  .progress-dot.done { background: var(--accent); }
+  .progress-dot.current { background: var(--warning); }
+  .day-tabs { display: flex; gap: 6px; padding: 10px 16px 0; overflow-x: auto; scrollbar-width: none; }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab { flex-shrink: 0; padding: 7px 14px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); font-size: 13px; cursor: pointer; color: var(--text2); white-space: nowrap; font-weight: 500; transition: all 0.15s; }
+  .day-tab.active { background: var(--surface2); color: var(--text); border-color: var(--border-strong); }
+  .day-tab .day-date { font-size: 11px; font-weight: 400; display: block; color: var(--text3); }
+  .session-wrap { padding: 12px 16px 0; }
+  .session-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .session-header { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .session-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .session-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 14px 6px; background: var(--surface2); border-top: 1px solid var(--border); }
+  .ex-item { padding: 10px 14px; border-top: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+  .ex-item:active { background: var(--surface2); }
+  .ex-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .ex-name { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+  .ex-spec { font-size: 13px; color: var(--accent-text); font-weight: 600; white-space: nowrap; }
+  .ex-note { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+  .ex-cue { display: none; font-size: 13px; color: var(--text2); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); line-height: 1.6; }
+  .ex-cue.open { display: block; }
+  .ex-cue strong { color: var(--text); font-weight: 600; }
+  .ex-hint { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .tip-box { margin: 10px 16px 0; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 10px 12px; font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .tip-box strong { color: var(--text); }
+  .done-btn { display: block; width: calc(100% - 32px); margin: 10px 16px 0; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); font-size: 15px; font-weight: 600; cursor: pointer; color: var(--text2); transition: all 0.15s; text-align: center; }
+  .done-btn.complete { background: var(--success-bg); color: var(--success-text); border-color: var(--success); }
+  .current-indicator { font-size: 11px; color: var(--warning-text); background: var(--warning-bg); border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 3px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>&#x1F6B4; Cyclist Training Program</h1>
+    <p>8 weeks &middot; Strength M/W/F &middot; Stretch Tu/Th/Sa &middot; Starts Jun 29</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-strength" onclick="switchPlan('strength')">&#x1F3CB; Strength</div>
+    <div class="tab" id="tab-stretch" onclick="switchPlan('stretch')">&#x1F9D8; Stretch</div>
+  </div>
+
+  <div class="week-nav">
+    <button class="nav-btn" id="prev-btn" onclick="changeWeek(-1)" disabled>&larr; Prev</button>
+    <div class="week-center">
+      <div class="week-label" id="week-label">Week 1</div>
+      <div class="week-dates" id="week-dates">Jun 29 – Jul 5</div>
+      <span class="phase-badge phase-foundation" id="phase-badge">Foundation</span>
+    </div>
+    <button class="nav-btn" id="next-btn" onclick="changeWeek(1)">Next &rarr;</button>
+  </div>
+
+  <div class="progress-row" id="progress-row"></div>
+  <div class="day-tabs" id="day-tabs"></div>
+  <div class="session-wrap" id="session-content"></div>
+</div>
+
+<script>
+var plan = 'strength';
+var week = 1;
+var day = 0;
+var done = {};
+try { done = JSON.parse(localStorage.getItem('cyc_done') || '{}'); } catch(e){}
+
+var weekMeta = [
+  {label:'Week 1', dates:'Jun 29 – Jul 5',  phase:'Foundation'},
+  {label:'Week 2', dates:'Jul 6 – Jul 12',  phase:'Foundation'},
+  {label:'Week 3', dates:'Jul 13 – Jul 19', phase:'Build'},
+  {label:'Week 4', dates:'Jul 20 – Jul 26', phase:'Deload'},
+  {label:'Week 5', dates:'Jul 27 – Aug 2',  phase:'Build'},
+  {label:'Week 6', dates:'Aug 3 – Aug 9',   phase:'Peak'},
+  {label:'Week 7', dates:'Aug 10 – Aug 16', phase:'Peak'},
+  {label:'Week 8', dates:'Aug 17 – Aug 23', phase:'Deload'}
+];
+
+var phaseClass = {Foundation:'phase-foundation',Build:'phase-build',Deload:'phase-deload',Peak:'phase-peak'};
+
+// Strength days with actual dates per week
+var strengthDays = [
+  [{day:'Monday',   date:'Jun 30'}, {day:'Wednesday', date:'Jul 2'},  {day:'Friday',    date:'Jul 4'}],
+  [{day:'Monday',   date:'Jul 7'},  {day:'Wednesday', date:'Jul 9'},  {day:'Friday',    date:'Jul 11'}],
+  [{day:'Monday',   date:'Jul 14'}, {day:'Wednesday', date:'Jul 16'}, {day:'Friday',    date:'Jul 18'}],
+  [{day:'Monday',   date:'Jul 21'}, {day:'Wednesday', date:'Jul 23'}, {day:'Friday',    date:'Jul 25'}],
+  [{day:'Monday',   date:'Jul 28'}, {day:'Wednesday', date:'Jul 30'}, {day:'Friday',    date:'Aug 1'}],
+  [{day:'Monday',   date:'Aug 4'},  {day:'Wednesday', date:'Aug 6'},  {day:'Friday',    date:'Aug 8'}],
+  [{day:'Monday',   date:'Aug 11'}, {day:'Wednesday', date:'Aug 13'}, {day:'Friday',    date:'Aug 15'}],
+  [{day:'Monday',   date:'Aug 18'}, {day:'Wednesday', date:'Aug 20'}, {day:'Friday',    date:'Aug 22'}]
+];
+
+var stretchDays = [
+  [{day:'Tuesday',  date:'Jul 1'},  {day:'Thursday',  date:'Jul 3'},  {day:'Saturday',  date:'Jul 5'}],
+  [{day:'Tuesday',  date:'Jul 8'},  {day:'Thursday',  date:'Jul 10'}, {day:'Saturday',  date:'Jul 12'}],
+  [{day:'Tuesday',  date:'Jul 15'}, {day:'Thursday',  date:'Jul 17'}, {day:'Saturday',  date:'Jul 19'}],
+  [{day:'Tuesday',  date:'Jul 22'}, {day:'Thursday',  date:'Jul 24'}, {day:'Saturday',  date:'Jul 26'}],
+  [{day:'Tuesday',  date:'Jul 29'}, {day:'Thursday',  date:'Jul 31'}, {day:'Saturday',  date:'Aug 2'}],
+  [{day:'Tuesday',  date:'Aug 5'},  {day:'Thursday',  date:'Aug 7'},  {day:'Saturday',  date:'Aug 9'}],
+  [{day:'Tuesday',  date:'Aug 12'}, {day:'Thursday',  date:'Aug 14'}, {day:'Saturday',  date:'Aug 16'}],
+  [{day:'Tuesday',  date:'Aug 19'}, {day:'Thursday',  date:'Aug 21'}, {day:'Saturday',  date:'Aug 23'}]
+];
+
+// Detect current week based on today's date
+function getCurrentWeek() {
+  var today = new Date();
+  var start = new Date('2025-06-29');
+  var diff = Math.floor((today - start) / (7 * 24 * 60 * 60 * 1000));
+  if (diff < 0) return 1;
+  if (diff > 7) return 8;
+  return diff + 1;
+}
+
+var SP = {
+  1:{meta:'3 sets · 10–12 reps · 60s rest · ~45 min',tip:'Week 1 (Jun 29–Jul 5): Dial in form. Move slower than you think you need to. Every rep is technique practice.',sections:[
+    {label:'Warm-up',ex:[
+      {n:'TRX row',s:'2×10',note:'Scapular activation — elbows to ribs',cue:'Anchor TRX at chest height. Lean back 45°, body rigid. Pull chest to handles, squeeze between shoulder blades at top. Control the descent. <strong>Cyclist fix:</strong> reverses the forward hunch from the drops.'},
+      {n:'Bodyweight squat',s:'2×10',note:'Slow, controlled — feel the hips load',cue:'Feet hip-width, toes slightly out. Sit back and down, chest up, knees track over toes. Pause 1 sec at bottom. <strong>Target:</strong> glutes and quads — your engine.'}
+    ]},
+    {label:'Main Work',ex:[
+      {n:'Goblet squat',s:'3×10',note:'Single dumbbell at chest · 20–25 lbs',cue:'Hold one DB vertically at chest. Squat deep — elbows brush inside knees at bottom. Drive through heels to stand. Challenging but form stays clean.'},
+      {n:'TRX single-leg deadlift',s:'3×8 each',note:'Light touch on TRX for balance only',cue:'Hold TRX handles loosely. Stand on one leg, hinge at hip, extend free leg behind. Feel hamstring load, return to stand. <strong>Cyclist benefit:</strong> hip hinge pattern + unilateral stability.'},
+      {n:'DB Romanian deadlift',s:'3×10',note:'Hip hinge — not a squat · 20–30 lbs',cue:'DBs in front of thighs. Push hips back, slight knee bend, lower DBs along shins until hamstring stretch. Drive hips forward to stand. <strong>This builds your power stroke.</strong>'},
+      {n:'TRX push-up',s:'3×10',note:'Feet in handles at knee height',cue:'Hands on floor, body straight. Lower chest toward floor, press back up. <strong>Modification:</strong> handles higher = easier. Core stays rigid throughout.'},
+      {n:'DB bent-over row',s:'3×10 each',note:'Elbow drives back, not out · 20–25 lbs',cue:'One hand on knee for support, back flat, parallel to floor. Pull elbow straight back to hip — pause, squeeze, lower slow.'},
+      {n:'Dead bug',s:'3×8 each side',note:'Low back pressed to floor the entire set',cue:'Lie on back, arms up, knees bent 90°. Slowly lower opposite arm + leg toward floor, exhale, return. <strong>Cue:</strong> belly button to spine. Do not rush.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank',s:'3×30s',note:'Build toward 45s in later weeks',cue:'Forearms on floor, elbows under shoulders, body straight head to heels. Squeeze glutes and abs. <strong>Stop</strong> when hips sag — short and tight beats long and saggy.'}
+    ]}
+  ]},
+  2:{meta:'3 sets · 10–12 reps · 60s rest · ~45 min',tip:'Week 2 (Jul 6–12): Same movements, better execution. Add 5 lbs anywhere that felt easy last week.',sections:[
+    {label:'Warm-up',ex:[
+      {n:'TRX row',s:'2×12',note:'Lean further back than last week',cue:'Increase difficulty by walking feet forward — more horizontal body angle. Feel the lats engage, not just biceps.'},
+      {n:'Hip circle + leg swing',s:'2×10 each',note:'Hip mobility primer',cue:'10 hip circles each direction, then 10 forward-back leg swings each leg. Wakes up hip flexors and glutes before loading.'}
+    ]},
+    {label:'Main Work',ex:[
+      {n:'Goblet squat',s:'3×12',note:'Add 5 lbs if Week 1 felt solid · 25–30 lbs',cue:'Pause at bottom 1–2 seconds. This is where the work happens.'},
+      {n:'TRX single-leg deadlift',s:'3×10 each',note:'Less reliance on TRX this week',cue:'Try to use TRX only as a balance catch. Add 1s pause at hinge bottom.'},
+      {n:'DB Romanian deadlift',s:'3×12',note:'Add 5 lbs if form was clean · 25–35 lbs',cue:'Control the descent for 2–3 counts. Increase range — lower until genuine hamstring stretch.'},
+      {n:'TRX push-up',s:'3×12',note:'Handles at shin height — harder',cue:'Lower foot anchor increases instability. Modification: keep feet higher if needed.'},
+      {n:'DB bent-over row',s:'3×12 each',note:'Add 5 lbs · 25–30 lbs',cue:'Pause 1 second at top with elbow at hip before lowering.'},
+      {n:'Dead bug',s:'3×10 each',note:'Slower tempo — 3 sec descent',cue:'Deliberately slow. The challenge is maintaining back contact with floor under load, not reps.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank',s:'3×40s',note:'Building 10s from last week',cue:'Add leg lift variation: lift one foot 2 inches, hold 5s, alternate.'}
+    ]}
+  ]},
+  3:{meta:'3–4 sets · 10–15 reps · 60s rest · ~50 min',tip:'Week 3 (Jul 13–19): Volume up. Challenged but controlled. This is the build week.',sections:[
+    {label:'Warm-up',ex:[
+      {n:'TRX row',s:'2×12',note:'Move to body parallel to floor if ready',cue:'Full horizontal position — most challenging angle. Real pulling work now.'},
+      {n:'Lateral band walk',s:'2×12 each',note:'Glute med activation before squats',cue:'No band? Wide stance, slight squat, step sideways 12 steps each direction. Feel the outer hip fire. Critical for knee tracking on the bike.'}
+    ]},
+    {label:'Main Work',ex:[
+      {n:'Goblet squat',s:'4×12',note:'Fourth set added · 30–40 lbs',cue:'4 sets is a meaningful jump. Keep rest to 60s.'},
+      {n:'TRX Bulgarian split squat',s:'3×10 each',note:'Rear foot in TRX handle — start light',cue:'Rear foot in TRX handle, front foot forward. Lower back knee toward floor. Devastating quad and glute work. <strong>Start light — this will humble you.</strong>'},
+      {n:'DB Romanian deadlift',s:'4×12',note:'4 sets this week · 30–40 lbs',cue:'Posterior chain is your cycling engine. Most important movement in the program.'},
+      {n:'DB floor press',s:'3×12',note:'Replaces TRX push-up · 20–30 lbs each',cue:'Lie on floor, DBs at chest, elbows 45°. Press to lockout, lower until triceps touch floor. Floor limits range = safer shoulder position.'},
+      {n:'DB bent-over row',s:'4×10 each',note:'Heavier, fewer reps · 30–40 lbs',cue:'This is now a strength movement. Increase weight.'},
+      {n:'TRX fallout',s:'3×10',note:'Replaces dead bug — harder',cue:'Hold TRX handles, arms extended overhead, lean body forward keeping rigid. Return. <strong>Scale back to dead bug if you feel it in your lower back.</strong>'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank + side plank',s:'3×45s / 2×30s',note:'Side plank added this week',cue:'Front plank 45s + side plank 30s each side. Core stability transfers directly to a stable platform on the bike.'}
+    ]}
+  ]},
+  4:{meta:'2–3 sets · 10 reps · 90s rest · ~35 min — DELOAD',tip:'Week 4 (Jul 20–26): Back off volume — planned deload. Your body is adapting. Do not skip this week.',sections:[
+    {label:'Deload Session',ex:[
+      {n:'TRX row',s:'2×10',note:'Easy angle — just move the pattern',cue:'Reduce angle, reduce effort. Keep the motor pattern alive but do not push output.'},
+      {n:'Goblet squat',s:'2×10',note:'Week 1 weight — slow and controlled',cue:'Lighter load to really own the bottom position.'},
+      {n:'DB Romanian deadlift',s:'3×10',note:'Two-thirds of current max weight',cue:'Stay in touch with the hip hinge. Do not push.'},
+      {n:'TRX push-up',s:'2×10',note:'Handles high — easy position',cue:'Maintenance only. Just keep the pattern.'},
+      {n:'DB bent-over row',s:'2×10 each',note:'Half weight — smooth',cue:'Full focus on back position and scapular movement.'},
+      {n:'Dead bug',s:'2×8 each',note:'Back to basics — slow and deliberate',cue:'Breathing and low back contact. Reset.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank',s:'2×30s',note:'Easy hold — deload means below your ceiling',cue:'You can do longer. Do not. Deload week means stopping short of max.'}
+    ]}
+  ]},
+  5:{meta:'4 sets · 8–12 reps · 60s rest · ~55 min',tip:'Week 5 (Jul 27–Aug 2): Second block. You have a base now — start pushing the weight.',sections:[
+    {label:'Warm-up',ex:[
+      {n:'TRX row',s:'2×12',note:'Horizontal — activation',cue:'Warm up the pulling chain before heavy rows. Feel the scapulae move.'},
+      {n:'Glute bridge',s:'2×15',note:'Fire glutes before all lower work',cue:'Lie on back, feet flat, push hips to ceiling. Squeeze hard at top, lower slow. Add 5-lb DB on hips if easy.'}
+    ]},
+    {label:'Main Work',ex:[
+      {n:'Goblet squat',s:'4×10',note:'Strength move now · 40–50 lbs',cue:'Fewer reps, more load. Depth and tempo still matter.'},
+      {n:'TRX Bulgarian split squat',s:'4×10 each',note:'Add DB in one hand · 15–20 lbs',cue:'Hold DB on the working-leg side. Mimics cycling\'s single-leg power demand.'},
+      {n:'DB weighted step-up',s:'4×10 each',note:'12–18" step · 20–30 lbs each',cue:'Hold DBs at sides, step up with one foot, drive through heel to stand. Lower slowly. <strong>Most cycling-specific lift in the program.</strong>'},
+      {n:'DB floor press',s:'4×10',note:'Heavier · 30–40 lbs each',cue:'Push the chest work — cyclists are chronically weak here.'},
+      {n:'TRX inverted row',s:'4×10',note:'Body horizontal — pull chest between handles',cue:'Handles lower, body more horizontal than standard TRX row. Scapulas fully retract. <strong>Best upper back exercise in the program.</strong>'},
+      {n:'Suitcase carry',s:'3×40 steps each',note:'Heavy DB one hand — stay tall · 35–45 lbs',cue:'Walk 40 steps, do not lean toward the weight. Core stability + hip alignment transfers directly to cycling posture.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank + side plank',s:'3×45s / 3×35s',note:'Maintaining from Week 3',cue:'Front plank 45s + side plank 35s each side. Hold the standard.'}
+    ]}
+  ]},
+  6:{meta:'4 sets · 8–10 reps · 75s rest · ~55 min',tip:'Week 6 (Aug 3–9): Peak block. Higher intensity, slightly more rest. Adaptation is stacking.',sections:[
+    {label:'Warm-up',ex:[
+      {n:'TRX row',s:'2×10',note:'Activation only',cue:'Easy warm-up for the pulling chain.'},
+      {n:'Glute bridge + hip thrust',s:'2×12',note:'Progressive hip activation',cue:'Set 1: bridge on floor. Set 2: shoulders on bench edge, hips lower, drive up. Higher range = more glute activation.'}
+    ]},
+    {label:'Main Work',ex:[
+      {n:'Goblet squat',s:'4×8',note:'Maximum load · 45–55 lbs',cue:'Heaviest weight so far. Control every rep. Form is the governor.'},
+      {n:'TRX Bulgarian split squat',s:'4×10 each',note:'DBs both hands · 20–30 lbs each',cue:'Rest full 75s between legs. This is a serious strength movement now.'},
+      {n:'DB weighted step-up',s:'4×10 each',note:'Heavier · 25–35 lbs each',cue:'Drive through the heel of the step foot exclusively. <strong>Do not push off the floor foot.</strong>'},
+      {n:'DB floor press',s:'4×8',note:'Heaviest chest work · 35–45 lbs each',cue:'8 reps, full control. Pause on floor each rep.'},
+      {n:'TRX inverted row',s:'4×10',note:'1s pause at top, 3-count descent',cue:'Slower eccentric adds significant work. Most rowing volume of the program so far.'},
+      {n:'Suitcase carry',s:'3×50 steps each',note:'Heavier · 35–45 lbs · walk tall',cue:'Walk tall. Hips level. This tests everything.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank + side plank + RKC plank',s:'3×50s / 3×40s / 2×25s',note:'RKC plank is new this week',cue:'RKC plank: standard position but squeeze fists, glutes, quads as hard as possible. 25s max. It will feel very different from a regular plank.'}
+    ]}
+  ]},
+  7:{meta:'4 sets · 8–12 reps · 75s rest · ~60 min',tip:'Week 7 (Aug 10–16): Second peak week. You are significantly stronger than Week 1. Trust the work.',sections:[
+    {label:'Warm-up',ex:[
+      {n:'TRX row',s:'2×10',note:'Horizontal — full activation',cue:'Full scapular retraction. Just warm-up.'},
+      {n:'Glute bridge + clamshell',s:'2×15 each',note:'Glute med focus',cue:'Lie on side, knees bent, rotate top knee open. Glute med work = more stable pelvis on the bike.'}
+    ]},
+    {label:'Main Work',ex:[
+      {n:'Goblet squat',s:'4×8',note:'Max weight maintained · 55 lbs',cue:'Work at your ceiling. Form breaks = stop the set.'},
+      {n:'TRX Bulgarian split squat',s:'4×12 each',note:'More reps — endurance layer',cue:'12 reps is a grind with heavy DBs. <strong>This mimics a long climb.</strong> Breathe.'},
+      {n:'DB weighted step-up',s:'4×12 each',note:'More reps, same weight as Week 6',cue:'Volume over intensity. Your legs are riding 3–4 days too — respect the total load.'},
+      {n:'DB floor press',s:'4×10',note:'Volume up from Week 6 · same weight',cue:'Back to 10 reps, maintain Week 6 weight. Highest total chest volume of the program.'},
+      {n:'TRX inverted row',s:'4×12',note:'Volume up from Week 6',cue:'12 reps, same difficulty. Your upper back is noticeably stronger than Week 1.'},
+      {n:'Suitcase + Farmer carry',s:'3×50 steps',note:'Alternate sets each type',cue:'One set suitcase each side, one set farmer carry (heavy DBs both hands). Different anti-flexion and anti-rotation demands.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank circuit',s:'1 round',note:'Front 60s → L 45s → R 45s → RKC 20s',cue:'Done as a circuit, minimal rest between. Hardest core session of the program.'}
+    ]}
+  ]},
+  8:{meta:'2–3 sets · 10 reps · 90s rest · ~35 min — DELOAD',tip:'Week 8 (Aug 17–23): Final deload. You have done the work. Consolidate the adaptations.',sections:[
+    {label:'Deload — Maintain Patterns',ex:[
+      {n:'Goblet squat',s:'2×10',note:'Half weight — light and smooth',cue:'Remember Week 1 weight. Enjoy the movement.'},
+      {n:'TRX row',s:'3×10',note:'Moderate angle',cue:'Keep pulling pattern active. Easy effort.'},
+      {n:'DB Romanian deadlift',s:'3×10',note:'Moderate weight',cue:'Hamstrings stay in touch with the movement. Do not push.'},
+      {n:'TRX push-up or floor press',s:'2×10',note:'Easy',cue:'Light press work. Maintenance only.'},
+      {n:'Dead bug',s:'2×8 each',note:'Back to basics',cue:'Full reset on core. Slow and deliberate.'},
+      {n:'Suitcase carry',s:'2×30 steps each',note:'Light — walk perfect posture',cue:'End on quality. Light DB, tall stance, easy pace.'}
+    ]},
+    {label:'Finish',ex:[
+      {n:'Plank',s:'2×45s',note:'Below your ceiling — that is the point',cue:'You can do 60s now. Deload means stopping short.'}
+    ]}
+  ]}
+};
+
+var XP = {
+  1:{meta:'30–40 min · Foam roll first, then hold 30–45s each',tip:'Week 1 (Jun 29–Jul 5): Roll everything slowly. Breathe into tight spots — 20–30s on any hot areas.',sections:[
+    {label:'Foam Roll (TriggerPoint Grid) — 60–90s each',ex:[
+      {n:'IT band / outer quad',s:'90s each',note:'Hip to just above knee — slow',cue:'Lie on side, Grid roller under outer thigh. Roll hip to just above knee. <strong>Pause on tender areas 20–30s.</strong> Most important roll for cyclists.'},
+      {n:'Thoracic spine',s:'90s',note:'Arms crossed over chest',cue:'Sit on floor, roller at mid-back. Arms crossed. Gently extend over roller, breathe. Work mid-back to shoulder blades. <strong>Reverses forward flexion from riding position.</strong>'},
+      {n:'Calf + Achilles',s:'60s each',note:'Stack ankles for more pressure',cue:'Sit, roller under one calf. Other ankle crossed on top. Flex and point foot while rolling for deeper effect.'}
+    ]},
+    {label:'Hip Flexor + Quad',ex:[
+      {n:'Kneeling hip flexor stretch',s:'45s each',note:'Rear knee on pad, tall posture',cue:'Right knee on floor, left foot forward. Push hips forward, squeeze rear glute. Feel deep stretch in front of right hip. <strong>Hip flexors are chronically shortened in cyclists.</strong>'},
+      {n:'Standing quad stretch',s:'45s each',note:'Use TRX strap for balance',cue:'Stand, heel to glute, hold ankle. Squeeze glute, push hip forward. <strong>Strap version:</strong> loop TRX around ankle for a deeper controlled hold.'}
+    ]},
+    {label:'Hamstring + Hip',ex:[
+      {n:'Supine hamstring stretch (strap)',s:'45s each',note:'TriggerPoint strap or towel around foot',cue:'Lie on back. Loop strap around foot. Extend leg toward ceiling, other leg flat. Keep back flat. Best hamstring stretch for cyclists — no forward fold tension.'},
+      {n:'Pigeon pose / figure-4',s:'60s each',note:'Figure-4 is safer if hips are very tight',cue:'<strong>Figure-4:</strong> lie on back, cross ankle over opposite knee, pull thigh toward chest. <strong>Full pigeon:</strong> shin across front, other leg extended back. Deep glute/piriformis stretch.'}
+    ]},
+    {label:'Upper Body + Spine',ex:[
+      {n:'Doorway chest opener / TRX chest stretch',s:'45s',note:'Or hold TRX handles and step forward',cue:'<strong>TRX version:</strong> hold both handles, step forward, let arms spread wide. Feel chest and anterior shoulder open. <strong>Directly counters the drops position.</strong>'},
+      {n:'Seated thoracic rotation',s:'60s each side',note:'Use chair or cross-legged on floor',cue:'Sit tall. Rotate upper body as far as comfortable, hold, breathe into it. Cyclists lose thoracic rotation from fixed position — this restores it.'},
+      {n:'Neck stretch — side + forward',s:'30s each direction',note:'Ear to shoulder, gentle — no force',cue:'Left ear to left shoulder. Then chin to chest. Releases upper trap and SCM from looking up at the road.'}
+    ]}
+  ]},
+  2:{meta:'35–40 min · Longer holds this week — 45–60s',tip:'Week 2 (Jul 6–12): Spend more time in each position. Exhale into the restriction.',sections:[
+    {label:'Foam Roll (Grid) — 90s each',ex:[
+      {n:'Glute + piriformis',s:'90s each',note:'Sit on roller, ankle crossed on knee',cue:'Sit on Grid roller. Cross ankle over opposite knee. Shift weight to that glute. Find the deep piriformis knot. <strong>Pause and breathe on tender spots.</strong>'},
+      {n:'Thoracic spine',s:'90s',note:'Arms overhead for deeper extension',cue:'Move arms overhead while rolling to increase thoracic extension. Pause at each level. <strong>Most underutilized stretch for cyclists.</strong>'},
+      {n:'Plantar fascia / arch',s:'60s each',note:'Foot roller or firm ball',cue:'Stand on Grid or firm ball. Roll arch with moderate pressure. Point and flex toes. Connects to calf and Achilles chain.'}
+    ]},
+    {label:'Hip Flexor — Deeper',ex:[
+      {n:'Low lunge with active drive',s:'60s each',note:'After 30s static, add 5 slow pulses',cue:'Kneeling lunge position. After 30s hold, pulse forward-back slowly. <strong>Contract-relax:</strong> squeeze rear glute, release, feel hip drop deeper each time.'},
+      {n:'Couch stretch',s:'60s each',note:'Rear foot against wall, knee at base',cue:'Kneeling with rear foot propped against wall. Torso upright. <strong>Most intense hip flexor stretch available.</strong> Start with just the kneeling position.'}
+    ]},
+    {label:'Hamstring + Hip',ex:[
+      {n:'Supine hamstring strap',s:'60s each',note:'Add dorsiflexion — flex foot hard',cue:'Same as Week 1, but actively flex the raised foot (toes toward shin) to add calf and sciatic chain stretch.'},
+      {n:'Pigeon pose',s:'60s each',note:'Working toward shin parallel to mat',cue:'Use block or pillow under hip if needed. <strong>Breathe into the glute.</strong> Each exhale, let the hip melt toward the floor.'}
+    ]},
+    {label:'Spine + Shoulders',ex:[
+      {n:'Cat-cow',s:'10 slow reps',note:'Breathe — arch fully, round fully',cue:'Hands and knees. Inhale = arch back, drop belly, lift head. Exhale = round back, tuck pelvis, drop head. <strong>Counteracts sustained neutral spine on the bike.</strong>'},
+      {n:'TRX chest/shoulder stretch',s:'45s each side',note:'Hold handle, rotate body away',cue:'Hold one TRX handle at shoulder height. Step forward and rotate body away — feel pec, anterior delt, bicep. The rotation reaches places a doorway stretch cannot.'}
+    ]}
+  ]},
+  3:{meta:'40–45 min · Progressive depth — hold 60s where possible',tip:'Week 3 (Jul 13–19): Noticeably more mobile than Week 1. Put extra time where you\'re still restricted.',sections:[
+    {label:'Foam Roll — Full Sequence',ex:[
+      {n:'Full leg roll sequence',s:'2 min each leg',note:'IT band → quad → hamstring → calf',cue:'Work systematically down the leg. Extra time on whatever is most restricted. The Grid\'s raised nodules reach deeper tissue than smooth rollers.'},
+      {n:'Full thoracic roll',s:'90s',note:'Include upper trap against wall',cue:'Place Grid vertically between upper back and wall. Roll slowly from neck base to mid-back. Ball pressure reaches paraspinals that floor rolling misses.'}
+    ]},
+    {label:'Hip Flexor + Glute',ex:[
+      {n:'Couch stretch',s:'75s each',note:'Building hold time week over week',cue:'Full position: knee at wall, rear foot propped, torso upright, glute squeezed.'},
+      {n:'Pigeon to twisted pigeon',s:'60s + 30s each',note:'Add the twist after base stretch',cue:'After 60s pigeon: hook elbow outside front knee and twist toward that leg. Opens hip, glute, piriformis in a new plane.'},
+      {n:'Frog stretch',s:'60s',note:'Knees wide, hips between knees',cue:'Hands and knees, walk knees wide. Lower hips toward floor. <strong>Targets hip adductors</strong> compressed from narrow road bike position.'}
+    ]},
+    {label:'Posterior Chain',ex:[
+      {n:'Supine hamstring strap + crossover',s:'60s + 30s each',note:'Crossover: leg goes across body',cue:'Base stretch first. Then cross raised leg across body toward opposite shoulder — adds IT band and outer hip. <strong>Strap essential</strong> for control through the crossover.'},
+      {n:'Seated forward fold',s:'60s',note:'Hinge from hips, not waist',cue:'Sit tall, legs straight. Hinge forward from hips — keep back as flat as possible. Walk hands forward. Not a collapse — active reach.'}
+    ]},
+    {label:'Upper Body',ex:[
+      {n:'Doorway chest + thread the needle',s:'45s + 45s each',note:'Thread: from quadruped, one arm under body',cue:'<strong>Thread the needle:</strong> hands and knees, slide right arm under left, right shoulder to floor. Best thoracic rotation stretch in the program.'},
+      {n:'Neck — full sequence',s:'30s each',note:'Side, forward, diagonal, chin tucks',cue:'Side bend each direction, forward drop, diagonal (ear toward opposite armpit). Chin tucks: draw chin straight back. <strong>Restores deep neck flexor strength</strong> lost from looking up while riding.'}
+    ]}
+  ]},
+  4:{meta:'25–30 min · Deload week — light rolling, feel-good only',tip:'Week 4 (Jul 20–26): Gentle. 30s holds, light pressure. This is recovery, not progress.',sections:[
+    {label:'Light Foam Roll — 60s each',ex:[
+      {n:'Thoracic spine',s:'60s',note:'Gentle pressure only',cue:'Easy rolling. No intense pausing. Just keep tissue moving.'},
+      {n:'Calves + IT band',s:'60s each',note:'Light contact',cue:'Maintain the rolling habit without pushing intensity. Body is recovering from the block.'}
+    ]},
+    {label:'Feel-Good Stretches',ex:[
+      {n:'Kneeling hip flexor',s:'45s each',note:'Easy depth — not pushing range',cue:'Comfortable stretch, not maximum. Keep it pleasant.'},
+      {n:'Supine hamstring strap',s:'45s each',note:'Easy range',cue:'Leg up only as far as feels nice. No forcing.'},
+      {n:'Cat-cow',s:'10 reps',note:'Slow and deliberate',cue:'Just breathe and move the spine. Best movement for the deload week.'},
+      {n:'Pigeon or figure-4',s:'45s each',note:'Whichever feels better',cue:'Comfortable depth. Focus on breathing, not depth.'}
+    ]}
+  ]},
+  5:{meta:'40–45 min · Second block — new movements, deeper progress',tip:'Week 5 (Jul 27–Aug 2): 4 weeks of baseline built. Deepen now. Notice what\'s still restricted.',sections:[
+    {label:'Foam Roll — Targeted',ex:[
+      {n:'Hip flexor — prone on roller',s:'90s each',note:'Lie face down, roller under anterior hip',cue:'Lie prone, Grid roller under right anterior hip (between hip bone and midline). Breathe and let weight sink. Prop on forearms. <strong>Direct treatment of hip flexor compression.</strong>'},
+      {n:'Thoracic + lat roll',s:'90s total',note:'Move roller from mid-back to underarm',cue:'After thoracic roll, move roller to just below armpit. Extend arm overhead. Roll the lat. <strong>Tight lats pull shoulders forward on the bike.</strong>'}
+    ]},
+    {label:'Hip Mobility Circuit',ex:[
+      {n:'World\'s greatest stretch',s:'5 reps each',note:'Lunge + rotation + reach — one flow',cue:'Deep lunge, same-side hand inside front foot, rotate toward knee reaching other hand to ceiling. Return. Stand. <strong>Touches hip flexor, thoracic rotation, hamstring, groin in one movement.</strong>'},
+      {n:'Couch stretch + PNF',s:'75–90s each',note:'3 contract-relax cycles within hold',cue:'Squeeze glute hard for 5s, release, feel hip drop. Repeat 3 times. <strong>PNF technique</strong> — accelerates range of motion gains.'},
+      {n:'Hip 90-90 stretch',s:'60s each position',note:'Both knees at 90° — sit tall',cue:'Sit on floor, right leg in front at 90°, left leg behind at 90°. Tall posture, front shin parallel to hips. Targets internal and external hip rotation simultaneously.'}
+    ]},
+    {label:'Hamstring + Low Back',ex:[
+      {n:'Supine hamstring + nerve floss',s:'45s + 10 reps each',note:'Nerve floss: extend/flex knee with leg raised',cue:'Base stretch 45s. Then alternate bending and straightening knee 10 slow times. <strong>Mobilizes sciatic nerve</strong> — addresses tingling some cyclists experience.'},
+      {n:'Child\'s pose — wide',s:'90s',note:'Knees wide, arms extended, forehead down',cue:'Breathe into lower back. <strong>Direct relief for lumbar compression</strong> from extended riding.'}
+    ]},
+    {label:'Upper Body',ex:[
+      {n:'Sleeper stretch',s:'45s each',note:'Internal shoulder rotation',cue:'Lie on right side, right arm on floor at 90°. Left hand gently presses right wrist toward floor. Feel posterior shoulder capsule. Common imbalance from sustained hood grip.'},
+      {n:'Thread the needle',s:'60s each',note:'Shoulder to floor — deepening from Week 3',cue:'Take the shoulder all the way to the floor. Breathe into the upper back. Exhale for another inch of rotation.'}
+    ]}
+  ]},
+  6:{meta:'40–45 min · Peak block — maximum depth and hold times',tip:'Week 6 (Aug 3–9): Push hold times to 75–90s. This is where tissue actually remodels.',sections:[
+    {label:'Foam Roll — Full Body',ex:[
+      {n:'Full leg + hip sequence',s:'2+ min each leg',note:'IT band → hip flexor prone → glute → ham → calf',cue:'Full sequence down and back. Do not rush. The roller is finding what riding and lifting have created this week.'},
+      {n:'Thoracic + lat + pec minor',s:'2 min total',note:'Add pec minor: ball between chest and shoulder',cue:'Pec minor: small ball or Grid corner between chest and front shoulder. Arm at 90° on floor. Breathe and wait. <strong>Tight in almost every cyclist. Hard to stretch any other way.</strong>'}
+    ]},
+    {label:'Hip Mobility — All Dimensions',ex:[
+      {n:'World\'s greatest stretch',s:'5 reps — slow',note:'Full breath at each position',cue:'Lunge breath, rotation breath, reach breath. Teaching your nervous system new end range.'},
+      {n:'Couch stretch — full',s:'90s each',note:'Longest holds of the program',cue:'3 PNF cycles within the stretch. If you started barely able to do this, 90s now is significant progress.'},
+      {n:'Hip 90-90 with forward fold',s:'75s each position',note:'Fold forward over front shin',cue:'Hinge forward over front leg. Feel deep hip external rotation. Control with both hands.'}
+    ]},
+    {label:'Posterior Chain — Deep',ex:[
+      {n:'Supine hamstring + crossover',s:'75s + 45s each',note:'Full sequence both legs',cue:'Try to get the crossover leg to a 45° angle. Breathe.'},
+      {n:'Pigeon to twisted pigeon',s:'75s + 45s each',note:'Full twist version',cue:'After 75s pigeon: hook top elbow outside front knee, look back over shoulder. <strong>Opens hip, glute, piriformis, and thoracic all at once.</strong>'}
+    ]},
+    {label:'Upper Body',ex:[
+      {n:'Full shoulder sequence',s:'45s each',note:'Sleeper + cross-body + wall overhead',cue:'Sleeper stretch 45s → cross-body reach 45s → arms-up wall stretch 45s. Three planes of shoulder mobility.'},
+      {n:'Thread the needle',s:'75s each',note:'Deepest thoracic rotation yet',cue:'Full shoulder contact with floor. Try to reach top arm behind back for additional rotation. Do not force — breathe into it.'}
+    ]}
+  ]},
+  7:{meta:'45 min · Volume peak — full program back-to-back',tip:'Week 7 (Aug 10–16): Full sequence, all movements, maximum time. Hardest stretch week. You\'re ready.',sections:[
+    {label:'Foam Roll — Complete (15 min) · 90s each zone',ex:[
+      {n:'IT band — outer quad',s:'90s each',note:'Both legs — start here as always',cue:'The most important zone. Go slow.'},
+      {n:'Hip flexor — prone',s:'90s each',note:'Both sides',cue:'Face down, roller under anterior hip. Breathe and sink.'},
+      {n:'Glute + piriformis',s:'90s each',note:'Ankle crossed, shift weight to glute',cue:'Find the piriformis knot. Pause on it.'},
+      {n:'Thoracic spine',s:'90s',note:'Arms overhead',cue:'Full extension. Pause at each level.'},
+      {n:'Lat — underarm',s:'90s each',note:'Arm extended overhead',cue:'Roll the lat on each side. Critical for shoulder posture.'},
+      {n:'Pec minor',s:'90s each',note:'Ball at front shoulder / chest junction',cue:'Let the weight of your arm sink in. Breathe.'},
+      {n:'Calf + Achilles',s:'90s each',note:'Ankle stacked — flex and point',cue:'End the roll sequence here.'}
+    ]},
+    {label:'Hip Mobility (15 min)',ex:[
+      {n:'World\'s greatest stretch',s:'6 reps each',note:'Breath at every position',cue:'Moving meditation. Full range, full breath.'},
+      {n:'Couch stretch + 3 PNF cycles',s:'90s each',note:'Maximum hold',cue:'Maximum hold. Maximum gains.'},
+      {n:'Hip 90-90 with forward fold',s:'75s each position',note:'Both positions, both sides',cue:'Four total holds.'},
+      {n:'Frog stretch',s:'90s',note:'Widest position you can hold',cue:'Breathe. Stay.'}
+    ]},
+    {label:'Posterior Chain (10 min)',ex:[
+      {n:'Supine hamstring + crossover',s:'75s + 45s each',note:'Both legs — full sequence',cue:'Add nerve floss at end if desired.'},
+      {n:'Pigeon — full twisted variation',s:'75s + 45s each',note:'Full hold, full twist, full breath',cue:'You know this movement well now.'},
+      {n:'Seated forward fold',s:'60s',note:'Hands on feet — active pull, flat back',cue:'Active reach forward. Not a collapse.'}
+    ]},
+    {label:'Upper Body (5 min)',ex:[
+      {n:'Full shoulder sequence',s:'45s each',note:'Sleeper + cross-body + wall overhead',cue:'Three planes. Do all three.'},
+      {n:'Thread the needle',s:'75s each',note:'Max rotation, max hold',cue:'Best rotation stretch in the program.'},
+      {n:'Neck — full sequence',s:'30s each direction',note:'Side, forward, diagonal, chin tuck',cue:'End the session here. Let the neck settle before you leave the mat.'}
+    ]}
+  ]},
+  8:{meta:'25–30 min · Final deload — feel good, maintain progress',tip:'Week 8 (Aug 17–23): You are significantly more mobile than 8 weeks ago. Gentle. Preserve what you\'ve built.',sections:[
+    {label:'Light Roll — 60s each',ex:[
+      {n:'IT band',s:'60s each',note:'Gentle pressure',cue:'Light contact. Maintain the habit, do not push intensity.'},
+      {n:'Thoracic spine',s:'60s',note:'Easy rolling',cue:'Gentle. Just keep the tissue moving.'},
+      {n:'Glute',s:'60s each',note:'Light contact',cue:'Three zones, gentle. Done.'}
+    ]},
+    {label:'Maintenance Stretches',ex:[
+      {n:'Kneeling hip flexor',s:'45s each',note:'Easy depth',cue:'Notice how much easier this is than Week 1.'},
+      {n:'Supine hamstring strap',s:'45s each',note:'Notice your range versus Week 1',cue:'Your range has changed. Take a moment to notice it.'},
+      {n:'Pigeon or figure-4',s:'45s each',note:'Whichever feels right',cue:'Both are fine. Choose comfort.'},
+      {n:'Cat-cow',s:'10 reps',note:'Slow — breathe',cue:'Just breathe and move the spine.'},
+      {n:'Thread the needle',s:'45s each',note:'Easy rotation',cue:'Close the program with thoracic work. You\'ve earned it.'}
+    ]}
+  ]}
+};
+
+function getP() { return plan === 'strength' ? SP : XP; }
+function getDaysArr() { return plan === 'strength' ? strengthDays : stretchDays; }
+function saveDone() { try { localStorage.setItem('cyc_done', JSON.stringify(done)); } catch(e){} }
+
+function switchPlan(p) {
+  plan = p; day = 0;
+  document.getElementById('tab-strength').classList.toggle('active', p === 'strength');
+  document.getElementById('tab-stretch').classList.toggle('active', p === 'stretch');
+  render();
+}
+function changeWeek(d) {
+  week = Math.max(1, Math.min(8, week + d));
+  day = 0; render();
+}
+function toggleCue(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+function toggleDone(key) {
+  done[key] = !done[key];
+  saveDone();
+  var btn = document.getElementById('done-' + key);
+  if (btn) {
+    btn.classList.toggle('complete', done[key]);
+    btn.textContent = done[key] ? '✓ Session complete' : 'Mark session complete';
+  }
+}
+
+function render() {
+  var wm = weekMeta[week - 1];
+  document.getElementById('week-label').textContent = 'Week ' + week;
+  document.getElementById('week-dates').textContent = wm.dates;
+  var badge = document.getElementById('phase-badge');
+  badge.textContent = wm.phase;
+  badge.className = 'phase-badge ' + phaseClass[wm.phase];
+  document.getElementById('prev-btn').disabled = week === 1;
+  document.getElementById('next-btn').disabled = week === 8;
+
+  var curWeek = getCurrentWeek();
+  var pr = document.getElementById('progress-row');
+  pr.innerHTML = '';
+  for (var i = 1; i <= 8; i++) {
+    var d2 = document.createElement('div');
+    if (i < curWeek) d2.className = 'progress-dot done';
+    else if (i === curWeek) d2.className = 'progress-dot current';
+    else d2.className = 'progress-dot';
+    pr.appendChild(d2);
+  }
+
+  var days = getDaysArr()[week - 1];
+  var dt = document.getElementById('day-tabs');
+  dt.innerHTML = '';
+  days.forEach(function(dy, idx) {
+    var btn = document.createElement('div');
+    btn.className = 'day-tab' + (idx === day ? ' active' : '');
+    btn.innerHTML = dy.day + '<span class="day-date">' + dy.date + '</span>';
+    btn.onclick = (function(i){ return function(){ day = i; render(); }; })(idx);
+    dt.appendChild(btn);
+  });
+
+  var wk = getP()[week];
+  var dayInfo = days[day];
+  var key = plan + '-w' + week + '-d' + day;
+  var isDone = !!done[key];
+
+  var html = '<div class="session-card">';
+  html += '<div class="session-header">';
+  html += '<div class="session-title">' + dayInfo.day + ', ' + dayInfo.date + ' — ' + (plan === 'strength' ? 'Strength' : 'Stretch') + '</div>';
+  html += '<div class="session-meta">' + wk.meta + '</div></div>';
+
+  wk.sections.forEach(function(sec) {
+    html += '<div class="section-label">' + sec.label + '</div>';
+    sec.ex.forEach(function(ex, ei) {
+      var cid = 'cue-' + sec.label.replace(/\W+/g,'-') + ei;
+      html += '<div class="ex-item" onclick="toggleCue(\'' + cid + '\')">';
+      html += '<div class="ex-row"><span class="ex-name">' + ex.n + '</span><span class="ex-spec">' + ex.s + '</span></div>';
+      if (ex.note) html += '<div class="ex-note">' + ex.note + '</div>';
+      if (ex.cue) {
+        html += '<div class="ex-cue" id="' + cid + '">' + ex.cue;
+        html += '<div class="ex-hint">tap to close</div></div>';
+      }
+      html += '</div>';
+    });
+  });
+
+  html += '</div>';
+  html += '<div class="tip-box"><strong>Coach note:</strong> ' + wk.tip + '</div>';
+  html += '<button class="done-btn' + (isDone ? ' complete' : '') + '" id="done-' + key + '" onclick="toggleDone(\'' + key + '\')">' + (isDone ? '✓ Session complete' : 'Mark session complete') + '</button>';
+
+  document.getElementById('session-content').innerHTML = html;
+}
+
+// Auto-navigate to current week on load
+week = getCurrentWeek();
+render();
+</script>
+</body>
+</html>
